@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.WindowManager;
 
+import com.example.myimage.MainActivity;
+
 public class Man_Hinh_Chao_Activity extends AppCompatActivity {
     private static int SPLASH_TIME_OUT = 3000;
 

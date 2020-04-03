@@ -2,8 +2,6 @@ package com.example.myimage;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,22 +9,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myimage.Model.Photo;
 import com.squareup.picasso.Picasso;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 
 public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.ViewHolder> {
     Context context;
     ArrayList<Photo> photoArrayList;
+    AdapterListener adapterListener;
 
-    public ImageViewAdapter(Context context, ArrayList<Photo> photoArrayList) {
+    public ImageViewAdapter(Context context, ArrayList<Photo> photoArrayList, AdapterListener adapterListener) {
         this.context = context;
         this.photoArrayList = photoArrayList;
+        this.adapterListener = adapterListener;
+    }
+    public interface AdapterListener{
+        void OnClick(int position);
     }
 
     @NonNull
@@ -44,22 +47,10 @@ public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.View
         holder.tvView.setText(photo.getViews());
         Picasso.with(context).load(photo.getUrlL()).into(holder.imgPhoto);
 
-
-
-
-
-        holder.imgPhoto.setOnClickListener(new View.OnClickListener() {
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context, Main2Activity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra("dulieu", photo.getUrlL());
-
-//                Bundle bundle = new Bundle();
-//                bundle.putString("urlLinkL", photo.getUrlL());
-//                bundle.putString("urlLinkO", photo.getUrlO());
-//                intent.putExtras(bundle);
-                context.startActivity(intent);
+                adapterListener.OnClick(position);
             }
         });
 
@@ -73,10 +64,12 @@ public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.View
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgPhoto;
         TextView tvView;
+        CardView cardView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imgPhoto = itemView.findViewById(R.id.imageview);
             tvView = itemView.findViewById(R.id.textviewView);
+            cardView = itemView.findViewById(R.id.cardView);
         }
     }
 }

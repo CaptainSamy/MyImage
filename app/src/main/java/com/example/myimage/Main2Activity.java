@@ -8,21 +8,32 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
 import android.app.AlertDialog;
+
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.myimage.Model.FlickrPhoto;
 import com.example.myimage.Model.Photo;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import dmax.dialog.SpotsDialog;
@@ -30,13 +41,16 @@ import dmax.dialog.SpotsDialog;
 public class Main2Activity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 1000 ;
     FloatingActionButton fab, fab1, fab2;
+    public ViewPager viewPager;
+    ViewpagerAdapter viewpagerAdapter;
     TextView tv1, tv2;
-    ImageView imgAnhMain2;
     boolean An_Hien = false;
     AlertDialog dialog;
-    String link, link2;
-    String mmmm;
+    String link;
+    public int position, currentPage;
+    List<Photo> photos;
 
+    // Xin quyền lưu vào bộ nhớ
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -57,6 +71,16 @@ public class Main2Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        fab = findViewById(R.id.fab);
+        fab1 = findViewById(R.id.fab1);
+        tv1 = findViewById(R.id.tv1);
+        fab2 = findViewById(R.id.fab2);
+        tv2 = findViewById(R.id.tv2);
+
+        viewPager = findViewById(R.id.viewPager);
+        Intent intent = this.getIntent();
+        position = intent.getIntExtra("position", 0);
+        getData();
 
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{
@@ -64,31 +88,8 @@ public class Main2Activity extends AppCompatActivity {
 
             },PERMISSION_REQUEST_CODE);
 
-//        imgAnhMain2 = findViewById(R.id.imageViewMain2);
-        ViewPager viewPager = findViewById(R.id.viewPager);
-        ViewpagerAdapter viewpagerAdapter = new ViewpagerAdapter(this, );
-        viewPager.setAdapter(viewpagerAdapter);
-
-        Intent intent2 = getIntent();
-        if (intent2 != null){
-            if (intent2.hasExtra("dulieu")){
-                mmmm = intent2.getStringExtra("dulieu");
-            }
-        }
-        //Log.d("hhhhhh", imageUrls.length + "");
-
-//        Bundle bundle2 = intent2.getExtras();
-//        link = (String) bundle2.get("urlLinkL");
-//        link2 = (String) bundle2.get("urlLinkO");
-//        Picasso.with(this).load(link).into(imgAnhMain2);
-        //Log.d("kkkkk", link2);
 
 
-        fab = findViewById(R.id.fab);
-        fab1 = findViewById(R.id.fab1);
-        tv1 = findViewById(R.id.tv1);
-        fab2 = findViewById(R.id.fab2);
-        tv2 = findViewById(R.id.tv2);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,7 +120,7 @@ public class Main2Activity extends AppCompatActivity {
                     dialog.setMessage("Downloading...");
 
                     String fileName = UUID.randomUUID().toString()+".jpg";
-                    Picasso.with(getBaseContext()).load(link).into(new SaveImageHelper(getBaseContext(),
+                    Picasso.with(getBaseContext()).load(photos.get(viewPager.getCurrentItem()).getUrlL()).into(new SaveImageHelper(getBaseContext(),
                             dialog,
                             getApplicationContext().getContentResolver(),
                             fileName, "Image description"));
@@ -143,7 +144,7 @@ public class Main2Activity extends AppCompatActivity {
                     dialog.setMessage("Downloading...");
 
                     String fileName2 = UUID.randomUUID().toString()+".png";
-                    Picasso.with(getBaseContext()).load(link).into(new SaveImageHelper(getBaseContext(),
+                    Picasso.with(getBaseContext()).load(photos.get(viewPager.getCurrentItem()).getUrlL()).into(new SaveImageHelper(getBaseContext(),
                             dialog,
                             getApplicationContext().getContentResolver(),
                             fileName2, "Image description2"));
@@ -152,6 +153,71 @@ public class Main2Activity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void getData() {
+        final ProgressDialog loading = new ProgressDialog(Main2Activity.this);
+        loading.setMessage("Loading...");
+        loading.show();
+
+        RequestQueue requestQueue =
+                Volley.newRequestQueue(Main2Activity.this);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                "https://www.flickr.com/services/rest", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Gson gson = new Gson();
+
+                FlickrPhoto flickrPhoto =
+                        gson.fromJson(response, FlickrPhoto.class);
+
+                photos = flickrPhoto.getPhotos().getPhoto();
+                viewpagerAdapter = new ViewpagerAdapter(Main2Activity.this, photos);
+                link = photos.get(viewPager.getCurrentItem()).getUrlL();
+                viewPager.setAdapter(viewpagerAdapter);
+                viewPager.setCurrentItem(position, true);
+                viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+                    }
+
+                    @Override
+                    public void onPageSelected(int position) {
+                        currentPage = position;
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int state) {
+
+                    }
+                });
+                viewpagerAdapter.notifyDataSetChanged();
+                loading.dismiss();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                loading.dismiss();
+                Toast.makeText(Main2Activity.this, error.toString(),Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+
+                Map<String, String> params = new HashMap<>();
+
+                params.put("api_key", "7a4b5ef02077a1f5dd3f1fef0d14ecb6");
+                params.put("user_id", "186424648@N06");
+                params.put("extras", "views, media, path_alias, url_l, url_o");
+                params.put("format", "json");
+                params.put("method", "flickr.favorites.getList");
+                params.put("nojsoncallback", "1");
+
+                return params;
+            }
+        };
+        requestQueue.add(stringRequest);
     }
 
     private void An() {
@@ -167,4 +233,5 @@ public class Main2Activity extends AppCompatActivity {
         tv1.setVisibility(View.VISIBLE);
         tv2.setVisibility(View.VISIBLE);
     }
+
 }

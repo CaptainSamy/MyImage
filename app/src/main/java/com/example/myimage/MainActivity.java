@@ -5,7 +5,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -38,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void GetData() {
+        final ProgressDialog loading = new ProgressDialog(MainActivity.this);
+        loading.setMessage("Loading...");
+        loading.show();
+
         RequestQueue requestQueue =
                 Volley.newRequestQueue(MainActivity.this);
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
@@ -51,23 +58,31 @@ public class MainActivity extends AppCompatActivity {
 
                 List<Photo> photos = flickrPhoto.getPhotos().getPhoto();
 
-                imageViewAdapter = new ImageViewAdapter(getApplication(), (ArrayList<Photo>) photos);
+                imageViewAdapter = new ImageViewAdapter(getApplication(), (ArrayList<Photo>) photos, new ImageViewAdapter.AdapterListener() {
+                    @Override
+                    public void OnClick(int position) {
+                        Intent intent = new Intent(MainActivity.this,Main2Activity.class);
+                        intent.putExtra("position",position);
+                        startActivity(intent);
+                    }
+                });
                 StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(NUM_COLUMNS,LinearLayoutManager.VERTICAL);
                 recyclerViewImage.setLayoutManager(staggeredGridLayoutManager);
 //                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this);
 //                linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
 //                recyclerViewImage.setLayoutManager(linearLayoutManager);
                 recyclerViewImage.setAdapter(imageViewAdapter);
-
+                loading.dismiss();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                loading.dismiss();
+                Toast.makeText(MainActivity.this, error.toString(),Toast.LENGTH_LONG).show();
             }
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-
                 Map<String, String> params = new HashMap<>();
 
                 params.put("api_key", "7a4b5ef02077a1f5dd3f1fef0d14ecb6");

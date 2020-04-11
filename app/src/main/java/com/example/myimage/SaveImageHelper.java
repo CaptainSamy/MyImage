@@ -13,9 +13,9 @@ import com.squareup.picasso.Target;
 import java.lang.ref.WeakReference;
 
 public class SaveImageHelper implements Target {  //sử dụng interface Target của Picasso đẻ lưu ảnh về storage
-    Context context;  //Thằng này cần để gọi activity mới sau khi tải xong
-    WeakReference<AlertDialog> alertDialogWeakReference;  // Thằng này sẽ ánh xạ tới cái dialog ở Main2Activity
-    WeakReference<ContentResolver> contentResolverWeakReference;  // Thằng này thì ánh xạ tới contentResolver ở Main2Activity
+    Context context;  //cần để gọi activity mới sau khi tải xong
+    WeakReference<AlertDialog> alertDialogWeakReference;  //ánh xạ tới dialog ở Main2Activity
+    WeakReference<ContentResolver> contentResolverWeakReference;  //ánh xạ tới contentResolver ở Main2Activity, tham chiếu yếu giúp quản lí bộ nhơ tốt hơn
     String name;
     String desc;
 
@@ -31,15 +31,13 @@ public class SaveImageHelper implements Target {  //sử dụng interface Target
     @Override
     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
         // Đây là nơi viết code xử lý sau khi tải thành công image
-        ContentResolver resolver = contentResolverWeakReference.get();
-        AlertDialog dialog = alertDialogWeakReference.get();
+        ContentResolver resolver = contentResolverWeakReference.get(); // get ContentResolver từ ánh xạ
+        AlertDialog dialog = alertDialogWeakReference.get();  // get AlertDialog từ ánh xạ
         if (resolver != null){
-            MediaStore.Images.Media.insertImage(resolver, bitmap, name, desc);
-            dialog.dismiss();
+            MediaStore.Images.Media.insertImage(resolver, bitmap, name, desc); // Truyền tham số vào
+            dialog.dismiss();  // Dismiss dialog sau khi save xong
             Toast.makeText(context, "Đã tải xong!",Toast.LENGTH_LONG).show();
         }
-
-
     }
 
     @Override

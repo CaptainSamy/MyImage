@@ -1,7 +1,6 @@
 package com.example.myimage;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +17,8 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 
-public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.ViewHolder> {
-    Context context;
+public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.ViewHolder> { //RecyclerView.Adapter : đây là nơi xử lý dữ liệu và gán cho View
+    Context context; //gọi đến cái màn hình mà adapter này phục vụ
     ArrayList<Photo> photoArrayList;
     AdapterListener adapterListener;
 
@@ -28,10 +27,12 @@ public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.View
         this.photoArrayList = photoArrayList;
         this.adapterListener = adapterListener;
     }
+    // tạo interfacr để lắng nghe sự kiện khi click vào 1 item trên recyclerView
     public interface AdapterListener{
         void OnClick(int position);
     }
 
+    // bố cục xml
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -41,6 +42,7 @@ public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.View
         return new ViewHolder(view);
     }
 
+    // cập nhật dữ liệu
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         final Photo photo = photoArrayList.get(position);
@@ -55,12 +57,13 @@ public class ImageViewAdapter extends RecyclerView.Adapter<ImageViewAdapter.View
         });
 
     }
-
+    // số lượng item sẽ hiển thị
     @Override
     public int getItemCount() {
         return photoArrayList.size();
     }
 
+    // hàm ánh xạ, liên kết đên các view có trong file xml
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgPhoto;
         TextView tvView;

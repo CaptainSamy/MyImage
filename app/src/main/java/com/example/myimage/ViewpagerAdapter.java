@@ -27,11 +27,13 @@ public class ViewpagerAdapter extends PagerAdapter {
         this.inflater = LayoutInflater.from(context);
     }
 
+    // đi sang 1 page khác sẽ destroy item ở page cũ
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
         container.removeView((View) object);
     }
 
+    //trả về số lượng item sẽ đc show
     @Override
     public int getCount() {
         return listPhotos.size();
@@ -40,29 +42,15 @@ public class ViewpagerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         View view1 = inflater.inflate(R.layout.item_slide, container, false);
-
         final ImageView imageView = view1.findViewById(R.id.image_slide);
-
-        Picasso.with(context)
-                .load(listPhotos.get(position).getUrlL())
-                .into(imageView);
-
+        Picasso.with(context).load(listPhotos.get(position).getUrlL()).into(imageView);
         container.addView(view1, 0);
-
         return view1;
     }
 
+    //phương thức kiểm tra xem các đối tượng đc trả về bởi instantiateItem() đc liên kết với View được cung cấp
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
         return view.equals(object);
-    }
-
-    @Override
-    public void restoreState(Parcelable state, ClassLoader loader) {
-    }
-
-    @Override
-    public Parcelable saveState() {
-        return null;
     }
 }

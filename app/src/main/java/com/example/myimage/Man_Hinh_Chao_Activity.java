@@ -18,12 +18,13 @@ public class Man_Hinh_Chao_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_FULLSCREEN); // set cho ảnh full màn hình
 
         setContentView(R.layout.activity_man__hinh__chao_);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+        actionBar.hide();  // ẩn thanh actionBar
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -31,6 +32,6 @@ public class Man_Hinh_Chao_Activity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
-        }, SPLASH_TIME_OUT);
+        }, SPLASH_TIME_OUT); // handler giúp lên lịch chuyển sang màn hình main sau 3s
     }
 }

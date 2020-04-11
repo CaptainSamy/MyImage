@@ -50,7 +50,7 @@ public class Main2Activity extends AppCompatActivity {
     public int position, currentPage;
     List<Photo> photos;
 
-    // Xin quyền lưu vào bộ nhớ
+    // người dùng đã cấp quyền hay chưa
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -82,15 +82,14 @@ public class Main2Activity extends AppCompatActivity {
         position = intent.getIntExtra("position", 0);
         getData();
 
+        // xin quyền lưu vào bộ nhớ
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(new String[]{
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
 
             },PERMISSION_REQUEST_CODE);
 
-
-
-
+        //
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,10 +103,11 @@ public class Main2Activity extends AppCompatActivity {
             }
         });
 
+        //
         fab1.setOnClickListener(new View.OnClickListener() {
-            //@RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void onClick(View view) {
+                // xin quyền lưu trữ từ người dùng nếu trước đó họ chưa cấp quyền
                 if (ActivityCompat.checkSelfPermission(Main2Activity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                     Toast.makeText(Main2Activity.this, "",Toast.LENGTH_SHORT).show();
                     requestPermissions(new String[]{
@@ -120,18 +120,21 @@ public class Main2Activity extends AppCompatActivity {
                     dialog.setMessage("Downloading...");
 
                     String fileName = UUID.randomUUID().toString()+".jpg";
-                    Picasso.with(getBaseContext()).load(photos.get(viewPager.getCurrentItem()).getUrlL()).into(new SaveImageHelper(getBaseContext(),
-                            dialog,
-                            getApplicationContext().getContentResolver(),
-                            fileName, "Image description"));
+                    Picasso.with(getBaseContext())
+                            .load(photos.get(viewPager.getCurrentItem()).getUrlL())
+                            .into(new SaveImageHelper(getBaseContext(), dialog,
+                                    getApplicationContext().getContentResolver(),
+                                    fileName, "Image description"));
                 }
 
             }
         });
 
+        //
         fab2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // xin quyền lưu trữ từ người dùng nếu trước đó họ chưa cấp quyền
                 if (ActivityCompat.checkSelfPermission(Main2Activity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                     Toast.makeText(Main2Activity.this, "",Toast.LENGTH_SHORT).show();
                     requestPermissions(new String[]{
@@ -155,41 +158,48 @@ public class Main2Activity extends AppCompatActivity {
         });
     }
 
+
     private void getData() {
+        // thông báo trạng thái khi đợi dữ liệu trả về
         final ProgressDialog loading = new ProgressDialog(Main2Activity.this);
         loading.setMessage("Loading...");
         loading.show();
-
+        //RequestQueue: nơi giữ các request trước khi gửi
+        //tạo một RequestQueue bằng lệnh
         RequestQueue requestQueue =
                 Volley.newRequestQueue(Main2Activity.this);
+        //StringRequest: kế thừa từ Request, là class đại diện cho request trả về String
+        // khai báo stringRepuest, phương thức POST
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 "https://www.flickr.com/services/rest", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Gson gson = new Gson();
+                Gson gson = new Gson(); //là một thư viện java giúp chuyển đổi qua lại giữa JSON và Java
 
                 FlickrPhoto flickrPhoto =
                         gson.fromJson(response, FlickrPhoto.class);
 
-                photos = flickrPhoto.getPhotos().getPhoto();
-                viewpagerAdapter = new ViewpagerAdapter(Main2Activity.this, photos);
-                link = photos.get(viewPager.getCurrentItem()).getUrlL();
+                photos = flickrPhoto.getPhotos().getPhoto(); // lấy ảnh từ flick để cho vào list ảnh gắn lên view
+
+                viewpagerAdapter = new ViewpagerAdapter(Main2Activity.this, photos); // gắn dữ liệu vào adapter
+                link = photos.get(viewPager.getCurrentItem()).getUrlL(); // link ảnh phục vụ cho việc tải
                 viewPager.setAdapter(viewpagerAdapter);
                 viewPager.setCurrentItem(position, true);
                 viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                     @Override
                     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+                        // Gọi khi sự kiện scroll bắt đầu diễn ra và đi tới page đó
                     }
 
                     @Override
                     public void onPageSelected(int position) {
+                        // Được gọi khi một page đã được chọn
                         currentPage = position;
                     }
 
                     @Override
                     public void onPageScrollStateChanged(int state) {
-
+                        // Được gọi khi trang thái scol thay đổi
                     }
                 });
                 viewpagerAdapter.notifyDataSetChanged();
@@ -204,9 +214,8 @@ public class Main2Activity extends AppCompatActivity {
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-
+                // lưu giữ các giá trị theo cặp key/value
                 Map<String, String> params = new HashMap<>();
-
                 params.put("api_key", "7a4b5ef02077a1f5dd3f1fef0d14ecb6");
                 params.put("user_id", "186424648@N06");
                 params.put("extras", "views, media, path_alias, url_l, url_o");

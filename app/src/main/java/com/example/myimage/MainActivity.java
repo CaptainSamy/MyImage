@@ -41,16 +41,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void GetData() {
+        // thông báo trạng thái khi đợi dữ liệu trả về
         final ProgressDialog loading = new ProgressDialog(MainActivity.this);
         loading.setMessage("Loading...");
         loading.show();
-
+        //RequestQueue: nơi giữ các request trước khi gửi
+        //tạo một RequestQueue bằng lệnh
         RequestQueue requestQueue =
                 Volley.newRequestQueue(MainActivity.this);
+        //StringRequest: kế thừa từ Request, là class đại diện cho request trả về String
+        // khai báo stringRepuest, phương thức POST
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                "https://www.flickr.com/services/rest", new Response.Listener<String>() {
+                "https://www.flickr.com/services/rest", new Response.Listener<String>() { //Nơi bạn nhận dữ liệu trả về từ server khi request hoàn thành
             @Override
             public void onResponse(String response) {
+                //là một thư viện java giúp chuyển đổi qua lại giữa JSON và Java
                 Gson gson = new Gson();
 
                 FlickrPhoto flickrPhoto =
@@ -58,7 +63,9 @@ public class MainActivity extends AppCompatActivity {
 
                 List<Photo> photos = flickrPhoto.getPhotos().getPhoto();
 
-                imageViewAdapter = new ImageViewAdapter(getApplication(), (ArrayList<Photo>) photos, new ImageViewAdapter.AdapterListener() {
+                // gọi interface bên adapter để bắt sự kiện chuyển màn hình và truyền position của item đã click sang màn hình main2
+                imageViewAdapter = new ImageViewAdapter(getApplication(), (ArrayList<Photo>) photos,
+                        new ImageViewAdapter.AdapterListener() {
                     @Override
                     public void OnClick(int position) {
                         Intent intent = new Intent(MainActivity.this,Main2Activity.class);
@@ -66,25 +73,28 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent);
                     }
                 });
-                StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(NUM_COLUMNS,LinearLayoutManager.VERTICAL);
+                // 1 dạng layout trong recyclerView giúp view hiển thị theo dạng lưới tùy theo kích thước của item
+                StaggeredGridLayoutManager staggeredGridLayoutManager = new
+                        StaggeredGridLayoutManager(NUM_COLUMNS,LinearLayoutManager.VERTICAL);
                 recyclerViewImage.setLayoutManager(staggeredGridLayoutManager);
 //                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this);
 //                linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
 //                recyclerViewImage.setLayoutManager(linearLayoutManager);
                 recyclerViewImage.setAdapter(imageViewAdapter);
-                loading.dismiss();
+                loading.dismiss();// dừng hiển thị thông báo loading
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                // nơi nhận các lỗi xảy ra khi request
                 loading.dismiss();
                 Toast.makeText(MainActivity.this, error.toString(),Toast.LENGTH_LONG).show();
             }
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
+                // lưu giữ các giá trị theo cặp key/value
                 Map<String, String> params = new HashMap<>();
-
                 params.put("api_key", "7a4b5ef02077a1f5dd3f1fef0d14ecb6");
                 params.put("user_id", "186424648@N06");
                 params.put("extras", "views, media, path_alias, url_l, url_o");
@@ -95,6 +105,6 @@ public class MainActivity extends AppCompatActivity {
                 return params;
             }
         };
-        requestQueue.add(stringRequest);
+        requestQueue.add(stringRequest); // thêm vào nơi giữ các request để gửi lên server
     }
 }

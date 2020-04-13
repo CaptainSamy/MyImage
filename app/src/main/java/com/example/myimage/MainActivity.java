@@ -4,10 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     ImageViewAdapter imageViewAdapter;
     RecyclerView recyclerViewImage;
+    SwipeRefreshLayout swipeRefreshLayout;
     private static final int NUM_COLUMNS = 2;
 
     @Override
@@ -37,14 +39,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerViewImage = findViewById(R.id.recyclerview);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //swipeRefreshLayout.setRefreshing(true);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        GetData();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 2000);
+            }
+        });
         GetData();
     }
 
     private void GetData() {
-        // thông báo trạng thái khi đợi dữ liệu trả về
-        final ProgressDialog loading = new ProgressDialog(MainActivity.this);
-        loading.setMessage("Loading...");
-        loading.show();
+        swipeRefreshLayout.setRefreshing(true);
         //RequestQueue: nơi giữ các request trước khi gửi
         //tạo một RequestQueue bằng lệnh
         RequestQueue requestQueue =
@@ -77,17 +91,14 @@ public class MainActivity extends AppCompatActivity {
                 StaggeredGridLayoutManager staggeredGridLayoutManager = new
                         StaggeredGridLayoutManager(NUM_COLUMNS,LinearLayoutManager.VERTICAL);
                 recyclerViewImage.setLayoutManager(staggeredGridLayoutManager);
-//                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this);
-//                linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
-//                recyclerViewImage.setLayoutManager(linearLayoutManager);
                 recyclerViewImage.setAdapter(imageViewAdapter);
-                loading.dismiss();// dừng hiển thị thông báo loading
+                swipeRefreshLayout.setRefreshing(false);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // nơi nhận các lỗi xảy ra khi request
-                loading.dismiss();
+                swipeRefreshLayout.setRefreshing(false);
                 Toast.makeText(MainActivity.this, error.toString(),Toast.LENGTH_LONG).show();
             }
         }) {

@@ -46,8 +46,8 @@ public class Main2Activity extends AppCompatActivity {
     TextView tv1, tv2;
     boolean An_Hien = false;
     AlertDialog dialog;
-    String link;
-    public int position, currentPage;
+    String link; // phục vụ cho việc tải ảnh
+    public int position; // nhận position của ảnh đã click bên main
     List<Photo> photos;
 
     // người dùng đã cấp quyền hay chưa
@@ -194,7 +194,6 @@ public class Main2Activity extends AppCompatActivity {
                     @Override
                     public void onPageSelected(int position) {
                         // Được gọi khi một page đã được chọn
-                        currentPage = position;
                     }
 
                     @Override
